@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Board">
+
+	<select id="selectMember" parameterType="hashMap" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM MEMBER
+		WHERE MEM_ID = #{mem_id} AND MEM_PASS = #{mem_pass}
+	</select>
+	
+	<insert id="insert" parameterType="hashMap" useGeneratedKeys="true">
+		<selectKey keyProperty="bo_no" resultType="int" order="BEFORE">
+			SELECT SEQ_BOARD.NEXTVAL FROM DUAL
+		</selectKey>
+		<![CDATA[
+		INSERT INTO BOARD(
+			BO_NO, BO_TITLE, BO_CONTENT, BO_WRITER, BO_DATE, BO_HIT
+		) VALUES (
+			#{bo_no}, #{bo_title}, #{bo_content}, #{bo_writer}, sysdate, 0
+		)
+		]]>
+	</insert>
+	
+	<select id="selectBoard" parameterType="hashMap" resultType="hashMap">
+		SELECT
+			BO_NO, BO_TITLE, BO_CONTENT, BO_WRITER, BO_DATE, BO_HIT
+		FROM BOARD
+		WHERE BO_NO = #{bo_no}
+	</select>
+
+	
+	<update id="update" parameterType="hashMap">
+		UPDATE BOARD
+		SET
+			BO_TITLE=#{bo_title},
+			BO_CONTENT=#{bo_content},
+			BO_WRITER=#{bo_writer}
+		WHERE BO_NO=#{bo_no}
+	</update>
+	
+	<delete id="delete" parameterType="hashMap">
+		DELETE FROM BOARD
+		WHERE BO_NO = #{bo_no}
+	</delete>
+	
+	<select id="selectBoardList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			BO_NO, BO_TITLE, BO_CONTENT, BO_WRITER, BO_DATE, BO_HIT
+		FROM BOARD
+		WHERE 1=1
+		<if test="keyword != null and keyword != ''">
+			AND
+			(
+				BO_TITLE LIKE '%'||#{keyword}||'%' OR
+				BO_WRITER LIKE '%'||#{keyword}||'%' OR
+				BO_CONTENT LIKE '%'||#{keyword}||'%'
+			)
+		</if>	
+		ORDER BY BO_DATE DESC 
+	</select>
+	
+	<update id="boardHit" parameterType="int">
+		UPDATE BOARD
+		SET
+			BO_HIT = BO_HIT+1
+		WHERE BO_NO=#{bo_no}
+	</update>
+	
+</mapper>
